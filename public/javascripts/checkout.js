@@ -1,4 +1,4 @@
-Stripe.setPublishableKey('sk_test_ZBxHhHtakWVb7KTxKkOGpGGO');
+Stripe.setPublishableKey('pk_test_GSzqjYyT1aSniP93lS5Lx0pk');
 
 var $form = $('#checkout-form');
 $form.submit(function(event) {
@@ -26,6 +26,8 @@ function stripeResponseHandler(status, response) {
 
         // Get the token ID:
         var token = response.id;
+        
+        console.log(token);
 
         // Insert the token into the form so it gets submitted to the server:
         $form.append($('<input type="hidden" name="stripeToken" />').val(token));
