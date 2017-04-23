@@ -38,6 +38,22 @@ router.get('/add-to-cart/:id', function (req, res, next) {
     });
 });
 
+router.get('/reduce/:id', function(req, res, next) {
+    var productId = req.params.id;
+    var cart = new Cart(req.session.cart ? req.session.cart : {});
+    cart.reduceByOne(productId);
+    req.session.cart = cart;
+    res.redirect('/shopping-cart');
+});
+
+router.get('/remove/:id', function(req, res, next) {
+    var productId = req.params.id;
+    var cart = new Cart(req.session.cart ? req.session.cart : {});
+    cart.removeItem(productId);
+    req.session.cart = cart;
+    res.redirect('/shopping-cart');
+});
+
 router.get('/shopping-cart', function (req, res, next) {
     if (!req.session.cart) {
         return res.render('shop/shopping-cart', {
@@ -51,7 +67,7 @@ router.get('/shopping-cart', function (req, res, next) {
     });
 });
 
-router.get('/checkout', function (req, res, next) {
+router.get('/checkout', isLoggedIn, function (req, res, next) {
     if (!req.session.cart) {
         return res.redirect('/shopping-cart');
     }
@@ -64,7 +80,7 @@ router.get('/checkout', function (req, res, next) {
     });
 });
 
-router.post('/checkout', function (req, res, next) {
+router.post('/checkout', isLoggedIn, function (req, res, next) {
     if (!req.session.cart) {
         return res.redirect('/shopping-cart');
     }
@@ -72,8 +88,6 @@ router.post('/checkout', function (req, res, next) {
     var stripe = require("stripe")(
         "sk_test_ZBxHhHtakWVb7KTxKkOGpGGO"
     );
-
-    console.log(req.body);
 
     stripe.charges.create({
         amount: cart.totalPrice * 100,
@@ -102,5 +116,13 @@ router.post('/checkout', function (req, res, next) {
 
 
 });
+
+function isLoggedIn(req, res, next) {
+    if(req.isAuthenticated()) {
+        return next();
+    }
+    req.session.oldUrl = req.url;
+    res.redirect('/user/signin');
+}
 
 module.exports = router;
